@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.2.xsd">
+
+	<!-- ============================================================ -->
+	<!-- dataSource -->
+	<!-- ============================================================ -->
+	<bean id="test.dataSource"
+		class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close"
+		p:driverClassName="${test.dataSource.driverClassName:com.microsoft.sqlserver.jdbc.SQLServerDriver}"
+		p:url="${test.dataSource.url:databaseurl}"
+		p:username="${test.dataSource.username:yourusername}"
+		p:password="${test.dataSource.password:yourpassword}"
+		p:initialSize="${test.dataSource.initialSize:10}"
+		p:maxActive="${test.dataSource.maxActive:300}"
+		p:maxWait="${test.dataSource.maxWait:10000}"
+		p:minIdle="${test.dataSource.minIdle:10}"
+		p:maxIdle="${test.dataSource.maxIdle:20}"
+		p:logAbandoned="${test.dataSource.logAbandoned:true}"
+		p:removeAbandoned="${test.dataSource.removeAbandoned:true}"
+		p:removeAbandonedTimeout="${test.dataSource.removeAbandonedTimeout:60}"
+		p:testWhileIdle="${test.dataSource.testWhileIdle:true}"
+		p:timeBetweenEvictionRunsMillis="${test.dataSource.timeBetweenEvictionRunsMillis:5000}"
+		p:minEvictableIdleTimeMillis="${test.dataSource.minEvictableIdleTimeMillis:30000}"
+		p:testOnBorrow="${test.dataSource.testOnBorrow:true}"
+		p:testOnReturn="${test.dataSource.testOnReturn:false}"
+		p:validationQuery="${test.dataSource.validationQuery:SELECT 1 }" />
+
+	<!-- <bean id="test.dataSource" class="org.jdbcdslog.ConnectionPoolXADataSourceProxy"> 
+		<property name="targetDSDirect" ref="test.dataSource.actual" /> </bean> -->
+
+	<bean id="test.emf"
+		class="com.zm.common.jpa.view.ViewSupportableEntityManagerFactoryBean">
+		<property name="dataSource" ref="test.dataSource" />
+		<property name="jpaProperties" ref="test.jpaProperties" />
+		<property name="persistenceUnitManager">
+			<bean
+				class="com.zm.common.jpa.support.MergingPersistenceUnitManager">
+				<property name="groups" value="group1" />
+				<property name="persistenceXmlLocation"
+					value="classpath:META-INF/persistence3.xml" />
+				<property name="defaultDataSource" ref="store.dataSource" />
+				<property name="persistenceUnitName" value="test" />
+			</bean>
+		</property>
+	</bean>
+
+	<bean id="test.txManager"
+		class="org.springframework.orm.jpa.JpaTransactionManager"
+		p:dataSource-ref="test.dataSource"
+		p:entityManagerFactory-ref="test.emf">
+		<qualifier value="zjlh-buffer-server.txManager" />
+	</bean>
+	<tx:annotation-driven proxy-target-class="true"
+		transaction-manager="test.txManager" />
+
+
+	<!-- ============================================================ -->
+	<!-- -->
+	<!-- ============================================================ -->
+	<bean id="test.jpaVendorAdapter"
+		class="com.zm.common.jpa.h3.HibernateJpaVendorAdapter">
+		<property name="actual">
+			<bean
+				class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" />
+		</property>
+	</bean>
+
+	<bean id="test.jpaProperties"
+		class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<property name="properties">
+			<props>
+				<prop key="hibernate.dialect">${test.jpaProperties.hibernate.dialect}</prop>
+				<prop key="hibernate.show_sql">${test.jpaProperties.hibernate.show_sql}</prop>
+				<prop key="hibernate.hbm2ddl.auto">${test.jpaProperties.hibernate.hbm2ddl.auto}</prop>
+				<!-- <prop key="hibernate.default_schema">${test.jpaProperties.hibernate.defaultSchema:test}</prop> -->
+			</props>
+		</property>
+	</bean>
+
+	<bean id="zjlh-buffer-server.entityManager"
+		class="org.springframework.orm.jpa.support.SharedEntityManagerBean">
+		<property name="entityManagerFactory" ref="test.emf" />
+	</bean>
+</beans>
