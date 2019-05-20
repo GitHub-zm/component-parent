@@ -1,0 +1,14 @@
+# .gitignore for maven
+target/
+*.releaseBackup
+
+# IDE support files
+/.classpath
+/.launch
+/.project
+/.settings
+/*.launch
+/*.tmproj
+/ivy*
+/eclipse
+/.svn
