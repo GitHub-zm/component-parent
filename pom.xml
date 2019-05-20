@@ -291,5 +291,6 @@
 		<module>component-test</module>
 		<module>component-customize</module>
 		<module>component-ds</module>
+		<module>component-jpa</module>
 	</modules>
 </project>
