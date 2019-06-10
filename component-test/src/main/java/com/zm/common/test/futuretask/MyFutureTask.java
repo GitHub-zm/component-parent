@@ -37,6 +37,7 @@ public class MyFutureTask<V> implements Runnable, Future<V> {
 			return result;
 		}
 		// 阻塞等待返回结果
+		// wait、notify...必须写在同步代码块里
 		synchronized (this) {
 			this.wait();
 		}
